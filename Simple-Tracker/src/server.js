@@ -56,13 +56,15 @@ app.post("/track", (req, res) => {
 app.get("/dashboard", checkAuth, (req, res) => {
   res.sendFile(path.join(__dirname, "dashboard.html"));
 
-  app.get("/api/visits", checkAuth, (req, res) => {
+app.get("/api/visits", checkAuth, (req, res) => {
   const rows = db.prepare("SELECT * FROM visitors ORDER BY timestamp DESC LIMIT 500").all();
   res.json(rows);
+});
 });
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
+
 
