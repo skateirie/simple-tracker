@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Tracking Demo</title>
+</head>
+<body>
+  <h1>Welcome</h1>
+
+  <script src="https://openfpcdn.io/fingerprintjs/v3"></script>
+  <script>
+    (async () => {
+      const fp = await FingerprintJS.load();
+      const result = await fp.get();
+
+      const payload = {
+        visitorId: result.visitorId,
+        screenWidth: screen.width,
+        screenHeight: screen.height,
+        timestamp: Date.now()
+      };
+
+      await fetch("/track", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(payload)
+      });
+    })();
+  </script>
+</body>
+</html>
