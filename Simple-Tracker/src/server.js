@@ -1,6 +1,8 @@
 const express = require("express");
 const db = require("./database");
 
+const path = require("path");
+
 const DASHBOARD_USER = "admin";
 const DASHBOARD_PASS = "password123";
 
@@ -52,7 +54,10 @@ app.post("/track", (req, res) => {
 
 // Simple dashboard
 app.get("/dashboard", checkAuth, (req, res) => {
-const rows = db.prepare("SELECT * FROM visitors ORDER BY timestamp DESC").all();
+  res.sendFile(path.join(__dirname, "dashboard.html"));
+
+  app.get("/api/visits", checkAuth, (req, res) => {
+  const rows = db.prepare("SELECT * FROM visitors ORDER BY timestamp DESC LIMIT 500").all();
   res.json(rows);
 });
 
@@ -60,3 +65,4 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
+
