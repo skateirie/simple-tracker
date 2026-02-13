@@ -1,0 +1,108 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Visitor Dashboard</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <style>
+    body { font-family: Arial; margin: 20px; }
+    .card { border: 1px solid #ccc; padding: 10px; margin-bottom: 20px; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { padding: 8px; border-bottom: 1px solid #ddd; }
+  </style>
+</head>
+
+<body>
+
+<h1>Surveillance Dashboard</h1>
+
+<div class="card">
+  <h2>Visits Over Time</h2>
+  <canvas id="chart"></canvas>
+</div>
+
+<div class="card">
+  <h2>Recent Visits</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Time</th>
+        <th>Visitor ID</th>
+        <th>IP</th>
+        <th>Screen</th>
+      </tr>
+    </thead>
+    <tbody id="table"></tbody>
+  </table>
+</div>
+
+<script>
+let chart;
+
+async function loadData() {
+  const res = await fetch('/api/visits');
+  const data = await res.json();
+
+  // Update table
+  const table = document.getElementById('table');
+  table.innerHTML = '';
+
+  data.slice(0, 50).forEach(row => {
+    const tr = document.createElement('tr');
+
+    const time = new Date(row.timestamp).toLocaleString();
+
+    tr.innerHTML = `
+      <td>${time}</td>
+      <td>${row.visitorId}</td>
+      <td>${row.ip}</td>
+      <td>${row.screenWidth}x${row.screenHeight}</td>
+    `;
+
+    table.appendChild(tr);
+  });
+
+  // Prepare chart data
+  const counts = {};
+
+  data.forEach(row => {
+    const date = new Date(row.timestamp);
+    const minute = date.getHours() + ":" + date.getMinutes();
+
+    counts[minute] = (counts[minute] || 0) + 1;
+  });
+
+  const labels = Object.keys(counts);
+  const values = Object.values(counts);
+
+  const ctx = document.getElementById('chart');
+
+  if (!chart) {
+    chart = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: labels,
+        datasets: [{
+          label: 'Visits',
+          data: values
+        }]
+      }
+    });
+  } else {
+    chart.data.labels = labels;
+    chart.data.datasets[0].data = values;
+    chart.update();
+  }
+}
+
+// Load every 5 seconds
+setInterval(loadData, 5000);
+
+// Initial load
+loadData();
+</script>
+
+</body>
+</html>
